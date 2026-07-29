@@ -1,0 +1,51 @@
+name: Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # ── Pull the eCH flavor gems from GitHub Packages ─────────────────
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: false
+        env:
+          # Gives Bundler read-access to GitHub Packages in your org
+          BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install dependencies
+        run: bundle install
+
+
+      # ── Compile all formats ────────────────────────────────────────────
+      - name: Compile standard
+        run: bundle exec metanorma compile --type ech standard.adoc
+
+      # ── Surface validation warnings as a job annotation ───────────────
+      - name: Show validation log
+        if: always()
+        run: |
+          if [ -f standard.err ]; then
+            echo "::group::Metanorma warnings"
+            cat standard.err
+            echo "::endgroup::"
+            # Fail the build if there are ERRORs (warnings are ok)
+            grep -i "^ERROR" standard.err && exit 1 || true
+          fi
+
+      # ── Upload all output formats as a downloadable artifact ──────────
+      - name: Upload output
+        uses: actions/upload-artifact@v4
+        with:
+          name: ech-standard-output
+          path: |
+            *.html
+            *.doc
+            *.pdf
+          retention-days: 90
