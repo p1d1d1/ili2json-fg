@@ -6,6 +6,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v7
 
@@ -15,9 +17,6 @@ jobs:
         with:
           ruby-version: "3.4"
           bundler-cache: false
-        env:
-          # Gives Bundler read-access to GitHub Packages in your org
-          BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies
         run: bundle install
