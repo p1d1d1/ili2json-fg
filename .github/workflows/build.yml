@@ -52,4 +52,6 @@ jobs:
             *.html
             *.doc
             *.pdf
+            *.xml
+            *.err
           retention-days: 90
