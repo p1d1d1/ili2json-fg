@@ -1,0 +1,13 @@
+== Einleitung
+
+=== Status
+
+Entwurf.
+
+=== Anwendungsgebiet
+
+Beschreiben Sie hier, wofür dieser Standard gilt:
+
+* Aufgabenbereiche gemäss [eCH-0122]
+* Konkrete Meldeflüsse und Kommunikationspartner
+* Unterstützte Use-Cases

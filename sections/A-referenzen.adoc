@@ -1,0 +1,11 @@
+[appendix]
+== Referenzen & Bibliographie
+
+[bibliography]
+=== Normative Referenzen
+
+* [[[eCH-0122,eCH-0122]]] Verein eCH: _eCH-0122 Architektur E-Government Schweiz: Grundlagen_.
+
+=== Informative Referenzen
+
+* [[[DSG,DSG]]] _Datenschutzgesetz vom 25. September 2020_ (SR 235.1).

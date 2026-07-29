@@ -1,0 +1,11 @@
+[appendix]
+== Änderungen gegenüber Vorversion
+
+Dies ist die erste Version.
+
+[cols="2,1,4,2",options="header"]
+|===
+| Kapitel | Seite | Anpassung | RFC Nr.
+
+| | | |
+|===
