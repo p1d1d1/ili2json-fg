@@ -24,6 +24,9 @@ jobs:
       - name: Show installed gems
         run: bundle exec gem list | grep -E "metanorma|isodoc"
 
+      - name: Try requiring metanorma-ech directly
+        run: bundle exec ruby -e "require 'metanorma-ech'"
+
       # ── Compile all formats ────────────────────────────────────────────
       - name: Compile standard
         run: bundle exec metanorma compile --type ech standard.adoc
