@@ -1,0 +1,17 @@
+// ============================================================
+// Anhang E — Abbildungsverzeichnis
+// AsciiDoc generates the list-of-figures automatically when
+// the :list-of-figures-title: attribute is set in the backend.
+// For HTML/DocBook this appendix serves as a placeholder.
+// ============================================================
+
+[appendix]
+[[anhang-e]]
+== Abbildungsverzeichnis
+
+// When converting with asciidoctor-pdf or docbook, use:
+//   :list-of-figures-title: Abbildungsverzeichnis
+// in attributes.adoc to get an auto-generated list.
+// For HTML output, figures are referenced inline via cross-references.
+
+list-of::image[]

@@ -1,9 +1,0 @@
-[appendix]
-== Mitarbeit & Überprüfung
-
-[cols="2,3",options="header"]
-|===
-| Name | Organisation / Firma
-
-| N. N. | Muster AG
-|===

@@ -1,0 +1,15 @@
+// ============================================================
+// Hinweis — mandatory notice on gender-neutral language
+// ============================================================
+
+[NOTE]
+====
+Im vorliegenden Dokument wird bei der Bezeichnung von Personen eine geschlechtsneutrale Formulierung verwendet.
+Basis bildet der https://www.bk.admin.ch/bk/de/home/dokumentation/sprachen/hilfsmittel-textredaktion/leitfaden-zum-geschlechtergerechten-formulieren.html[Leitfaden] der Bundeskanzlei.
+Je nach Situation kommen Paarformen (Bürgerinnen und Bürger), geschlechtsabstrakte Formen (versicherte Person), geschlechtsneutrale Formen (Versicherte) oder Umschreibungen ohne Personenbezug zum Einsatz.
+Das generische Maskulin (Bürger) ist nicht zulässig.
+Vollformen werden in fortlaufenden Texten verwendet, also in Texten, die aus ausformulierten Sätzen bestehen.
+In verknappten Textpassagen, namentlich in Tabellen, können Kurzformen verwendet werden.
+Dabei wird die Kurzform mit Schrägstrich, aber ohne Auslassungsstrich verwendet (Referent/in).
+Genderstern und ähnliche Schreibweisen werden nicht verwendet.
+====

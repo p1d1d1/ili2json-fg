@@ -1,0 +1,12 @@
+// ============================================================
+// Anhang F — Tabellenverzeichnis
+// ============================================================
+
+[appendix]
+[[anhang-f]]
+== Tabellenverzeichnis
+
+// Same approach as Abbildungsverzeichnis — auto-generated in PDF/DocBook.
+// For HTML, tables are cross-referenced inline.
+
+list-of::table[]

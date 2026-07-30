@@ -1,0 +1,32 @@
+// ============================================================
+// Kapitel 1 — Einleitung
+// ============================================================
+
+[[einleitung]]
+== Einleitung
+
+[[status]]
+=== Status
+
+// Replace with one of: Entwurf | In Vernehmlassung | Genehmigt | Aufgehoben
+_{doc-status}_
+
+[[anwendungsgebiet]]
+=== Anwendungsgebiet
+
+// TIP: The following guidance (highlighted in the Word template) describes
+// what to cover in this section. Remove this block when writing the real content.
+[TIP]
+====
+Die Angaben in diesem Kapitel sollen dem Leser einen raschen Überblick geben, wofür dieser Standard gedacht ist.
+Hinweise zu folgenden Sachverhalten können dabei hilfreich sein:
+
+* Benennung der Aufgabenbereiche gem. [eCH-0122: Architektur E-Government Schweiz: Grundlagen], +
+  Beispiel «Bauen»
+* Konkrete Meldeflüsse mit entsprechenden Kommunikationspartnern, +
+  Beispiel «Datenaustausch zwischen Baugesuchstellern und Bewilligungsbehörden»
+* Konkrete UseCases die vom Standard unterstützt werden, +
+  Beispiel «Abwickeln elektronisches Baugesuch»
+====
+
+_<Anwendungsgebiet beschreiben>_

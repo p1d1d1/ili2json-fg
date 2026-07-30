@@ -1,0 +1,15 @@
+// ============================================================
+// Anhang B — Mitarbeit & Überprüfung
+// ============================================================
+
+[appendix]
+[[anhang-b]]
+== Mitarbeit & Überprüfung
+
+_<Hier sind alle Mitarbeiterinnen und Mitarbeiter aufzuführen, die an dieser Version des Dokuments mitgearbeitet haben.>_
+
+[cols="30,70",frame="none",grid="none"]
+|===
+| <N. N.> | <Organisation/Firma>
+| <N. N.> | <Organisation/Firma>
+|===

@@ -1,0 +1,16 @@
+// ============================================================
+// Kapitel 3 — Sicherheitsüberlegungen
+// ============================================================
+
+[[sicherheitsueberlegungen]]
+== Sicherheitsüberlegungen
+
+_<Text>_
+
+// TIP: Add a reference to relevant legal bases or note that the implementor
+// must observe the applicable legal framework.
+[TIP]
+====
+<Hinweis auf explizit relevante gesetzliche Grundlagen, oder ein Hinweis,
+dass bei der Umsetzung die relevanten gesetzlichen Grundlagen zu beachten sind.>
+====

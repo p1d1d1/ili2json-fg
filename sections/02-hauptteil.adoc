@@ -1,9 +1,0 @@
-== Inhalt
-
-=== Übersicht
-
-Text des Standards.
-
-=== Detailbeschreibung
-
-Text.

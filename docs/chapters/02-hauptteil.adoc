@@ -1,0 +1,60 @@
+// ============================================================
+// Kapitel 2 — Hauptteil (Titel 1)
+// Demonstrates all formatting elements from the Word template
+// ============================================================
+
+[[titel-1]]
+== Titel 1
+
+Text
+
+// --- Figure example -----------------------------------------
+.Abbildung: Text
+image::images/placeholder.png[Beispielbild,200]
+
+[[titel-2]]
+=== Titel 2
+
+[[titel-3]]
+==== Titel 3
+
+* Untertitel
+
+[.austauschformat]
+Austauschformat
+
+// Unordered list — three levels
+* Aufzählung Ebene 1
+** Aufzählung Ebene 2
+*** Aufzählung Ebene 3
+
+// Ordered list — mixed styles (arabic / alpha / bullet)
+. Aufzählung Ebene 1
+.. Aufzählung Ebene 2
+*** Aufzählung Ebene 3
+
+// Alpha-first ordered list
+[loweralpha]
+. Aufzählung Ebene 1
+.. Aufzählung Ebene 1
+*** Aufzählung Ebene 1
+
+// --- Table example ------------------------------------------
+.Tabelle: Text
+[cols="~,~,~",options="header",frame="all",grid="all"]
+|===
+| Text1 | Text 2 | Text 3
+
+| AAAa  | Aaaa   | aAAa
+| Bbb   | Bbb    | bbb
+|===
+
+[[titel-4]]
+===== Titel 4
+
+Text
+
+[[titel-5]]
+====== Titel 5
+
+Text

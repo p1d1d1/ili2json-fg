@@ -1,4 +1,0 @@
-== Sicherheitsüberlegungen
-
-Bei der Umsetzung sind die relevanten gesetzlichen Grundlagen zu beachten,
-insbesondere das Datenschutzgesetz (DSG, SR 235.1).

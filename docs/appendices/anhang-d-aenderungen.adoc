@@ -1,0 +1,24 @@
+// ============================================================
+// Anhang D — Änderungen gegenüber Vorversion
+// ============================================================
+
+[appendix]
+[[anhang-d]]
+== Änderungen gegenüber Vorversion
+
+_<Dies ist die erste Version.>_
+
+// For subsequent versions, replace the line above with a change table:
+// .Tabelle: Änderungen gegenüber Vorversion
+// [cols="15,10,60,15",options="header",frame="all",grid="all"]
+// |===
+// | Kapitel | Seite | Anpassung | RFC Nr.
+// |         |       |           |
+// |===
+
+// In case of an addendum, use instead:
+// ____
+// Das vorliegende Dokument hält, im Sinne eines «Addendum», Ergänzungen /
+// Präzisierungen zum gültigen Standard fest. Die entsprechenden Hinweise werden
+// in der nächsten Version des Standards in den Standard übernommen.
+// ____

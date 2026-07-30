@@ -1,57 +1,76 @@
-name: Build
+name: Build eCH Standard
 
 on:
   workflow_dispatch:
 
+# Write access needed to commit build output back to the repo
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      BUNDLE_RUBYGEMS__PKG__GITHUB__COM: ${{ secrets.GITHUB_TOKEN }}
+
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      # ── Pull the eCH flavor gems from GitHub Packages ─────────────────
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.4"
-          bundler-cache: false
-
-      - name: Install dependencies
-        run: bundle install
-
-      - name: Show installed gems
-        run: bundle exec gem list | grep -E "metanorma|isodoc"
-
-      - name: Try requiring metanorma-ech directly
-        run: bundle exec ruby -e "require 'metanorma-ech'"
-
-      # ── Compile all formats ────────────────────────────────────────────
-      - name: Compile standard
-        run: bundle exec metanorma compile --type ech standard.adoc
-
-      # ── Surface validation warnings as a job annotation ───────────────
-      - name: Show validation log
-        if: always()
+      # ── Install toolchain ─────────────────────────────────────
+      - name: Install Asciidoctor
         run: |
-          if [ -f standard.err ]; then
-            echo "::group::Metanorma warnings"
-            cat standard.err
-            echo "::endgroup::"
-            # Fail the build if there are ERRORs (warnings are ok)
-            grep -i "^ERROR" standard.err && exit 1 || true
-          fi
+          gem install asciidoctor
+          gem install asciidoctor-pdf
+          asciidoctor --version
+          asciidoctor-pdf --version
 
-      # ── Upload all output formats as a downloadable artifact ──────────
-      - name: Upload output
-        uses: actions/upload-artifact@v4
-        with:
-          name: ech-standard-output
-          path: |
-            *.html
-            *.doc
-            *.pdf
-            *.xml
-            *.err
-          retention-days: 90
+      - name: Install Pandoc
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y pandoc
+          pandoc --version
+
+      # ── Generate HTML ─────────────────────────────────────────
+      - name: Build HTML
+        run: |
+          asciidoctor \
+            --backend html5 \
+            --destination-dir build \
+            --attribute toc-placement=left \
+            --attribute source-highlighter=highlight.js \
+            docs/index.adoc
+          cp -r docs/images build/images
+
+      # ── Generate DocBook XML (intermediate for Word) ──────────
+      - name: Build DocBook XML
+        run: |
+          asciidoctor \
+            --backend docbook5 \
+            --destination-dir build \
+            docs/index.adoc
+
+      # ── Convert DocBook → Word via Pandoc ────────────────────
+      # Uses the original eCH .docx as style reference so headings,
+      # fonts and colours match the official template.
+      - name: Build Word (.docx)
+        run: |
+          pandoc \
+            --from docbook \
+            --to docx \
+            --reference-doc build/ech-reference.docx \
+            --toc \
+            --toc-depth 5 \
+            --output build/index.docx \
+            build/index.xml
+
+      # ── Remove intermediate DocBook XML ──────────────────────
+      - name: Clean up intermediate files
+        run: rm -f build/index.xml
+
+      # ── Commit build output back to the repository ────────────
+      - name: Commit build output
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add build/index.html build/index.docx build/images/
+          git diff --cached --quiet || git commit -m "ci: build HTML and Word [skip ci]"
+          git push

@@ -1,3 +1,0 @@
-== Zusammenfassung
-
-Kurze Zusammenfassung des Zwecks dieses Standards.

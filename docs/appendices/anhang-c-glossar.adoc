@@ -1,0 +1,13 @@
+// ============================================================
+// Anhang C — Abkürzungen und Glossar
+// ============================================================
+
+[appendix]
+[[anhang-c]]
+== Abkürzungen und Glossar
+
+[cols="20,80",frame="none",grid="none"]
+|===
+| <Abk.> | <Text>
+| <Abk.> | <Text>
+|===

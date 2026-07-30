@@ -1,0 +1,60 @@
+// ============================================================
+// Document Attributes — edit these to customise the standard
+// ============================================================
+
+// --- Identity -----------------------------------------------
+:ech-nummer:        eCH-0XXX
+:doc-title:         Titel des Standards
+:doc-version:       x.x.x
+:doc-status:        Entwurf
+// Status values: Entwurf | In Vernehmlassung | Genehmigt | Aufgehoben
+
+// --- Classification & maturity ------------------------------
+:doc-kategorie:     Standard
+// Kategorie values: Standard | Empfehlung | Hilfsmittel | Leitfaden
+:doc-reifegrad:     Stabil
+// Reifegrad values: Stabil | Konsolidiert | Leicht Veränderlich | Stark Veränderlich
+
+// --- Dates --------------------------------------------------
+:doc-beschluss:     JJJJ-MM-TT
+:doc-ausgabe:       JJJJ-MM-TT
+
+// --- Versioning ---------------------------------------------
+:doc-ersetzt-version: x.x.x
+:doc-ersetzt-status:  Aufgehoben
+// Ersetzt-status values: Aufgehoben | Ersetzt | Zurückgezogen
+
+// --- Dependencies & attachments -----------------------------
+:doc-voraussetzungen: <Vorausgesetzter Standard>
+:doc-beilagen:        <Beilage>
+
+// --- Languages & workgroup ----------------------------------
+:doc-sprachen:      Deutsch (Original), Französisch (Übersetzung)
+:doc-fachgruppe:    <Fachgruppe>
+
+// --- Publisher ----------------------------------------------
+:doc-herausgeber:   Verein eCH, Affolternstrasse 52, 8050 Zürich
+:doc-telefon:       T 044 388 74 64
+:doc-email:         info@ech.ch
+:doc-web:           www.ech.ch
+
+// --- File naming convention (used in footer) ----------------
+// Pattern: XXXX_d_DRA_JJJJ-MM-TT_eCH-0XXX_Vx_x_x_Titel
+:doc-filename:      {ech-nummer}_V{doc-version}_{doc-title}
+
+// ============================================================
+// AsciiDoc rendering settings
+// ============================================================
+:doctype:           book
+:lang:              de
+:encoding:          UTF-8
+:icons:             font
+:source-highlighter: rouge
+:figure-caption:    Abbildung
+:table-caption:     Tabelle
+:appendix-caption:  Anhang
+:last-update-label: Ausgabe
+:toc-placement:     auto
+:numbered:
+:sectnumlevels:     5
+:xrefstyle:         short

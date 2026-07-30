@@ -1,0 +1,42 @@
+// ============================================================
+// Cover Page
+// Reproduces the eCH title-page metadata table
+// ============================================================
+
+// The title block (rendered as cover in docbook/pdf backends)
+= {doc-title}
+:subtitle: {ech-nummer} – Version {doc-version}
+
+// eCH logo
+ifdef::backend-docbook5,backend-docx[]
+image::images/ech-logo.gif[eCH Logo,align="right"]
+endif::[]
+ifndef::backend-docbook5,backend-docx[]
+image::images/ech-logo.gif[eCH Logo,float="right",width=150]
+endif::[]
+
+// --- Metadata table (mirrors the Word template cover table) -
+[cols="30,70",options="",frame="all",grid="all"]
+|===
+| Name              | {doc-title}
+| eCH-Nummer        | {ech-nummer}
+| Kategorie         | {doc-kategorie}
+| Reifegrad         | {doc-reifegrad}
+| *Version*         | *{doc-version}*
+| Status            | {doc-status}
+| Beschluss am      | {doc-beschluss}
+| Ausgabedatum      | {doc-ausgabe}
+| *Ersetzt Version* | *{doc-ersetzt-version} – {doc-ersetzt-status}*
+| Voraussetzungen   | {doc-voraussetzungen}
+| Beilagen          | {doc-beilagen}
+| Sprachen          | {doc-sprachen}
+| Fachgruppe        | {doc-fachgruppe}
+| Herausgeber / Vertrieb
+a| {doc-herausgeber} +
+{doc-telefon} / {doc-email} / {doc-web}
+|===
+
+// Summary block
+== Zusammenfassung
+
+_<Kurze Zusammenfassung des Zwecks des Dokuments>_
