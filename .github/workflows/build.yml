@@ -13,13 +13,13 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # ── Install toolchain ─────────────────────────────────────
       - name: Install Asciidoctor
         run: |
-          gem install asciidoctor
-          gem install asciidoctor-pdf
+          sudo gem install asciidoctor
+          sudo gem install asciidoctor-pdf
           asciidoctor --version
           asciidoctor-pdf --version
 
