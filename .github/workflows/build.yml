@@ -13,21 +13,16 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       # ── Install toolchain ─────────────────────────────────────
       - name: Install Asciidoctor
         run: |
           sudo gem install asciidoctor
-          sudo gem install asciidoctor-pdf
           asciidoctor --version
-          asciidoctor-pdf --version
 
-      - name: Install Pandoc
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y pandoc
-          pandoc --version
+      - name: Install Python dependencies
+        run: pip install python-docx lxml pyyaml
 
       # ── Generate HTML ─────────────────────────────────────────
       - name: Build HTML
@@ -40,31 +35,16 @@ jobs:
             docs/index.adoc
           cp -r docs/images build/images
 
-      # ── Generate DocBook XML (intermediate for Word) ──────────
-      - name: Build DocBook XML
-        run: |
-          asciidoctor \
-            --backend docbook5 \
-            --destination-dir build \
-            docs/index.adoc
-
-      # ── Convert DocBook → Word via Pandoc ────────────────────
-      # Uses the original eCH .docx as style reference so headings,
-      # fonts and colours match the official template.
+      # ── Generate Word (.docx) via Python script ───────────────
+      # Clones the reference template and rebuilds the body using
+      # exact eCH styles — faithful to the original template.
       - name: Build Word (.docx)
         run: |
-          pandoc \
-            --from docbook \
-            --to docx \
-            --reference-doc build/ech-reference.docx \
-            --toc \
-            --toc-depth 5 \
-            --output build/index.docx \
-            build/index.xml
-
-      # ── Remove intermediate DocBook XML ──────────────────────
-      - name: Clean up intermediate files
-        run: rm -f build/index.xml
+          python3 build/scripts/generate_docx.py \
+            --reference build/ech-reference.docx \
+            --content   build/content.yaml \
+            --output    build/index.docx \
+            --images    docs/images
 
       # ── Commit build output back to the repository ────────────
       - name: Commit build output
