@@ -2,6 +2,8 @@
 // Anhang F — Tabellenverzeichnis
 // ============================================================
 
+:appendix-caption: Anhang
+
 [appendix]
 [[anhang-f]]
 == Tabellenverzeichnis

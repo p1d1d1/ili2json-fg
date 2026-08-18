@@ -2,6 +2,8 @@
 // Anhang B — Mitarbeit & Überprüfung
 // ============================================================
 
+:appendix-caption: Anhang
+
 [appendix]
 [[anhang-b]]
 == Mitarbeit & Überprüfung

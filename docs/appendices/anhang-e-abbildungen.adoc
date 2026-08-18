@@ -5,6 +5,8 @@
 // For HTML/DocBook this appendix serves as a placeholder.
 // ============================================================
 
+:appendix-caption: Anhang
+
 [appendix]
 [[anhang-e]]
 == Abbildungsverzeichnis

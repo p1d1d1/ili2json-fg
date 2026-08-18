@@ -2,6 +2,8 @@
 // Anhang C — Abkürzungen und Glossar
 // ============================================================
 
+:appendix-caption: Anhang
+
 [appendix]
 [[anhang-c]]
 == Abkürzungen und Glossar

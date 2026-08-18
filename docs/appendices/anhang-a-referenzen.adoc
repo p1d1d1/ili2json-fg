@@ -2,6 +2,8 @@
 // Anhang A — Referenzen & Bibliographie
 // ============================================================
 
+:appendix-caption: Anhang
+
 [appendix]
 [[anhang-a]]
 == Referenzen & Bibliographie
@@ -9,8 +11,8 @@
 _<Keine>_
 
 // Uncomment and fill in references as needed:
-// [cols="15,85",frame="none",grid="none"]
-// |===
-// | [Ref1] | <Vollständige Referenz>
-// | [Ref2] | <Vollständige Referenz>
-// |===
+ [cols="15,85",frame="none",grid="none"]
+ |===
+ | [Ref1] | <Vollständige Referenz>
+ | [Ref2] | <Vollständige Referenz>
+ |===
