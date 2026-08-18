@@ -98,36 +98,70 @@ def clear_body(doc):
             body.remove(child)
 
 
-def add_toc(doc, title='Inhaltsverzeichnis'):
-    p_title = doc.add_paragraph(style='TitelInhaltsverzeichnis')
-    p_title.add_run(title)
+def _make_complex_field(instr, placeholder, style_name, doc):
+    """
+    Build a paragraph with a proper complex TOC/TOF field:
+    fldChar(begin) -> instrText -> fldChar(separate) -> placeholder -> fldChar(end)
+    This is required for TOC fields — fldSimple causes Word to corrupt the doc
+    when the field is updated because the result spans multiple paragraphs.
+    """
     p = doc.add_paragraph()
     try:
-        p.style = doc.styles['Verzeichnis1']
+        p.style = doc.styles[style_name]
     except KeyError:
         pass
-    fld = OxmlElement('w:fldSimple')
-    fld.set(qn('w:instr'), r' TOC \o "1-5" \h \z \u ')
-    run = OxmlElement('w:r')
-    t = OxmlElement('w:t')
-    t.text = '[Inhaltsverzeichnis wird beim Öffnen in Word aktualisiert]'
-    run.append(t); fld.append(run); p._p.append(fld)
+
+    def mk_run(child):
+        r = OxmlElement('w:r')
+        r.append(child)
+        return r
+
+    fc_begin = OxmlElement('w:fldChar')
+    fc_begin.set(qn('w:fldCharType'), 'begin')
+    fc_begin.set(qn('w:dirty'), 'true')   # forces update on open
+    p._p.append(mk_run(fc_begin))
+
+    instr_el = OxmlElement('w:instrText')
+    instr_el.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve')
+    instr_el.text = instr
+    p._p.append(mk_run(instr_el))
+
+    fc_sep = OxmlElement('w:fldChar')
+    fc_sep.set(qn('w:fldCharType'), 'separate')
+    p._p.append(mk_run(fc_sep))
+
+    r_ph = OxmlElement('w:r')
+    rpr = OxmlElement('w:rPr')
+    rpr.append(OxmlElement('w:noProof'))
+    r_ph.append(rpr)
+    t_ph = OxmlElement('w:t')
+    t_ph.text = placeholder
+    r_ph.append(t_ph)
+    p._p.append(r_ph)
+
+    fc_end = OxmlElement('w:fldChar')
+    fc_end.set(qn('w:fldCharType'), 'end')
+    p._p.append(mk_run(fc_end))
+
+
+def add_toc(doc, title='Inhaltsverzeichnis'):
+    doc.add_paragraph(style='TitelInhaltsverzeichnis').add_run(title)
+    _make_complex_field(
+        instr=' TOC \\o "1-5" \\h \\z \\u ',
+        placeholder='[Inhaltsverzeichnis wird beim Öffnen in Word aktualisiert]',
+        style_name='Verzeichnis1',
+        doc=doc,
+    )
 
 
 def add_tof(doc, heading_text, field_name):
-    p = doc.add_paragraph(style='Anhangberschrift')
-    p.add_run(heading_text)
-    p2 = doc.add_paragraph()
-    try:
-        p2.style = doc.styles['Abbildungsverzeichnis']
-    except KeyError:
-        pass
-    fld = OxmlElement('w:fldSimple')
-    fld.set(qn('w:instr'), rf' TOC \h \z \c "{field_name}" ')
-    run = OxmlElement('w:r')
-    t = OxmlElement('w:t')
-    t.text = f'[{field_name}-Verzeichnis wird beim Öffnen in Word aktualisiert]'
-    run.append(t); fld.append(run); p2._p.append(fld)
+    doc.add_paragraph(style='Anhangberschrift').add_run(heading_text)
+    _make_complex_field(
+        instr=f' TOC \\h \\z \\c "{field_name}" ',
+        placeholder=f'[{field_name}-Verzeichnis wird beim Öffnen in Word aktualisiert]',
+        style_name='Abbildungsverzeichnis',
+        doc=doc,
+    )
 
 
 def add_caption(doc, caption_type, counter, label):
