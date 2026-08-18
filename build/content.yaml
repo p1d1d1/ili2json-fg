@@ -22,7 +22,8 @@ metadata:
   fachgruppe:       "<Fachgruppe>"
   herausgeber:      "Verein eCH, Affolternstrasse 52, 8050 Zürich"
   kontakt:          "T 044 388 74 64 / info@ech.ch / www.ech.ch"
-  zusammenfassung:  "<Kurze Zusammenfassung des Zwecks des Dokuments>"
+  
+zusammenfassung_file: docs/zusammenfassung.adoc
 
 hinweis_file: docs/hinweis.adoc
 

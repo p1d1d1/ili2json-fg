@@ -147,7 +147,7 @@ def _make_complex_field(instr, placeholder, style_name, doc):
 def add_toc(doc, title='Inhaltsverzeichnis'):
     doc.add_paragraph(style='TitelInhaltsverzeichnis').add_run(title)
     _make_complex_field(
-        instr=' TOC \\o "1-5" \\h \\z \\u ',
+        instr=r' TOC \o "1-5" \h \z \u ',
         placeholder='[Inhaltsverzeichnis wird beim Öffnen in Word aktualisiert]',
         style_name='Verzeichnis1',
         doc=doc,
@@ -157,7 +157,7 @@ def add_toc(doc, title='Inhaltsverzeichnis'):
 def add_tof(doc, heading_text, field_name):
     doc.add_paragraph(style='Anhangberschrift').add_run(heading_text)
     _make_complex_field(
-        instr=f' TOC \\h \\z \\c "{field_name}" ',
+        instr=rf' TOC \h \z \c "{field_name}" ',
         placeholder=f'[{field_name}-Verzeichnis wird beim Öffnen in Word aktualisiert]',
         style_name='Abbildungsverzeichnis',
         doc=doc,
@@ -334,39 +334,74 @@ def render_cover(doc, metadata):
     ech_nr = metadata.get('ech_nummer', '<ID>')
     title  = metadata.get('title', '<Name>')
 
-    # Title paragraph with bookmarked SDTs
+    body = doc.element.body
+    sect_pr = body.find(qn('w:sectPr'))
+
+    def insert_before_sect(el):
+        """Insert element as last body child before sectPr."""
+        if sect_pr is not None:
+            sect_pr.addprevious(el)
+        else:
+            body.append(el)
+
+    # ── bookmarkStart(eCHNummer) as body-level element ─────────
+    bm0 = OxmlElement('w:bookmarkStart')
+    bm0.set(qn('w:id'), '0')
+    bm0.set(qn('w:name'), 'eCHNummer')
+    insert_before_sect(bm0)
+
+    # ── Titel paragraph ───────────────────────────────────────
     p_title = doc.add_paragraph(style='Titel')
     pel = p_title._p
 
-    def bm_start(bm_id, name):
-        el = OxmlElement('w:bookmarkStart')
-        el.set(qn('w:id'), str(bm_id)); el.set(qn('w:name'), name); return el
+    # SDT: eCH-Dossier Nr.
+    sdt_nr = make_sdt_text('eCH-Dossier Nr.', 'eCH-Dossier Nr.', ech_nr)
+    pel.append(sdt_nr)
 
-    def bm_end(bm_id):
-        el = OxmlElement('w:bookmarkEnd')
-        el.set(qn('w:id'), str(bm_id)); return el
+    # bookmarkEnd(0) inside paragraph, after eCHNummer SDT
+    bme0 = OxmlElement('w:bookmarkEnd')
+    bme0.set(qn('w:id'), '0')
+    pel.append(bme0)
 
-    pel.append(bm_start(100, 'eCHNummer'))
-    pel.append(make_sdt_text('eCH-Dossier Nr.', 'eCH-Dossier Nr.', ech_nr))
-    pel.append(bm_end(100))
+    # Separator " – "
     r_sep = OxmlElement('w:r')
     t_sep = OxmlElement('w:t')
     t_sep.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve')
-    t_sep.text = ' – '; r_sep.append(t_sep); pel.append(r_sep)
-    pel.append(bm_start(101, 'eCHName'))
-    pel.append(make_sdt_text('eCH-Dossier Name', 'eCH-Dossier Name', title))
-    pel.append(bm_end(101))
+    t_sep.text = ' \u2013 '
+    r_sep.append(t_sep)
+    pel.append(r_sep)
 
-    # Metadata table
+    # bookmarkStart(eCHName) inside paragraph, before eCHName SDT
+    bms1 = OxmlElement('w:bookmarkStart')
+    bms1.set(qn('w:id'), '1')
+    bms1.set(qn('w:name'), 'eCHName')
+    pel.append(bms1)
+
+    # SDT: eCH-Dossier Name
+    sdt_name = make_sdt_text('eCH-Dossier Name', 'eCH-Dossier Name', title)
+    pel.append(sdt_name)
+
+    # bookmarkEnd(1)
+    bme1 = OxmlElement('w:bookmarkEnd')
+    bme1.set(qn('w:id'), '1')
+    pel.append(bme1)
+
+    # ── Metadata table ────────────────────────────────────────
     _render_metadata_table(doc, metadata, ech_nr, title)
 
-    # Zusammenfassung
+    # ── Zusammenfassung ───────────────────────────────────────
     doc.add_paragraph(style='Standard')
     doc.add_paragraph(style='Nebentitel').add_run('Zusammenfassung')
-    p_zus = doc.add_paragraph(style='Standard')
-    p_zus.add_run(metadata.get('zusammenfassung',
+
+    zus_file = metadata.get('zusammenfassung_file')
+    if zus_file and os.path.exists(zus_file):
+        render_blocks(doc, parse_adoc(zus_file), os.path.dirname(zus_file) or '.', {})
+    else:
+        p_zus = doc.add_paragraph(style='Standard')
+        p_zus.add_run(metadata.get('zusammenfassung',
                   '<Kurze Zusammenfassung des Zwecks des Dokuments>')).italic = True
     doc.add_paragraph(style='Nebentitel')  # spacer
+
 
 
 def _render_metadata_table(doc, metadata, ech_nr, title):

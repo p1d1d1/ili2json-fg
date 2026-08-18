@@ -1,6 +1,2 @@
-dist/
-_site/
-*.pdf
-# keep the reference docx in build/ but ignore generated ones
-dist/*.docx
-dist/*.xml
+build/*.docx
+build/*.html

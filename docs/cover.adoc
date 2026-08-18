@@ -38,5 +38,4 @@ a| {doc-herausgeber} +
 
 // Summary block
 == Zusammenfassung
-
-_<Kurze Zusammenfassung des Zwecks des Dokuments>_
+include::zusammenfassung.adoc[]
