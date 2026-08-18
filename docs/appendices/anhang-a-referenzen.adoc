@@ -2,7 +2,7 @@
 // Anhang A — Referenzen & Bibliographie
 // ============================================================
 
-[anhang]
+[appendix]
 [[anhang-a]]
 == Referenzen & Bibliographie
 
