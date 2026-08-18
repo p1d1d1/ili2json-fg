@@ -1,8 +1,8 @@
 # ============================================================
 # eCH Standard — Content Definition
-# Edit this file to write your standard.
-# The generate_docx.py script converts it to a Word document
-# using the exact eCH styles from the reference template.
+# Chapters and appendices can reference .adoc files directly.
+# The adoc parser handles headings, paragraphs, lists, tables,
+# images, bold/italic inline formatting, and role annotations.
 # ============================================================
 
 metadata:
@@ -14,7 +14,8 @@ metadata:
   reifegrad:        "Stabil"
   beschluss:        "JJJJ-MM-TT"
   ausgabe:          "JJJJ-MM-TT"
-  ersetzt_version:  "x.x.x – Aufgehoben"
+  ersetzt_version:  "x.x.x"
+  ersetzt_status:   "Aufgehoben"
   voraussetzungen:  "<Vorausgesetzter Standard>"
   beilagen:         "<Beilage>"
   sprachen:         "Deutsch (Original), Französisch (Übersetzung)"
@@ -23,270 +24,34 @@ metadata:
   kontakt:          "T 044 388 74 64 / info@ech.ch / www.ech.ch"
   zusammenfassung:  "<Kurze Zusammenfassung des Zwecks des Dokuments>"
 
-# ── Body chapters ────────────────────────────────────────────
 chapters:
+  - type: adoc_file
+    file: docs/chapters/01-einleitung.adoc
 
-  # ── Kapitel 1: Einleitung ──────────────────────────────────
-  - type: heading
-    level: 1
-    text: "Einleitung"
+  - type: adoc_file
+    file: docs/chapters/02-hauptteil.adoc
 
-  - type: heading
-    level: 2
-    text: "Status"
+  - type: adoc_file
+    file: docs/chapters/03-sicherheit.adoc
 
-  - type: paragraph
-    text: "Wählen Sie ein Element aus."
-    italic: true
+  - type: adoc_file
+    file: docs/chapters/04-haftung.adoc
 
-  - type: heading
-    level: 2
-    text: "Anwendungsgebiet"
+  - type: adoc_file
+    file: docs/chapters/05-urheberrecht.adoc
 
-  - type: paragraph
-    text: >
-      Die Angaben in diesem Kapitel sollen dem Leser einen raschen Überblick
-      geben, wofür dieser Standard gedacht ist.
-
-  - type: list_item
-    list_style: bullet1
-    text: "Benennung der Aufgabenbereiche gem. [eCH-0122: Architektur E-Government Schweiz: Grundlagen]"
-
-  - type: list_item
-    list_style: bullet1
-    text: "Konkrete Meldeflüsse mit entsprechenden Kommunikationspartnern"
-
-  - type: list_item
-    list_style: bullet1
-    text: "Konkrete UseCases die vom Standard unterstützt werden"
-
-  # ── Kapitel 2: Hauptteil ───────────────────────────────────
-  - type: heading
-    level: 1
-    text: "Titel 1"
-
-  - type: paragraph
-    text: "Text"
-
-  - type: image
-    file: "placeholder.png"
-    width_cm: 5.0
-    align: right
-    caption: "Text"
-
-  - type: heading
-    level: 2
-    text: "Titel 2"
-
-  - type: heading
-    level: 3
-    text: "Titel 3"
-
-  - type: subtitle
-    text: "Untertitel"
-
-  - type: austauschformat
-    text: "Austauschformat"
-
-  - type: list_item
-    list_style: bullet1
-    text: "Aufzählung Ebene 1"
-
-  - type: list_item
-    list_style: bullet2
-    text: "Aufzählung Ebene 2"
-
-  - type: list_item
-    list_style: bullet2
-    text: "Aufzählung Ebene 3"
-
-  - type: list_item
-    list_style: number1
-    text: "Aufzählung Nummeriert Ebene 1"
-
-  - type: list_item
-    list_style: number1
-    text: "Aufzählung Nummeriert Ebene 2"
-
-  - type: list_item
-    list_style: alpha1
-    text: "Aufzählung Alpha Ebene 1"
-
-  - type: table
-    caption: "Text"
-    col_widths: [3070, 3070, 3071]
-    headers:
-      - "Text1"
-      - "Text 2"
-      - "Text 3"
-    rows:
-      - ["AAAa", "Aaaa", "aAAa"]
-      - ["Bbb",  "Bbb",  "bbb"]
-
-  - type: heading
-    level: 4
-    text: "Titel 4"
-
-  - type: paragraph
-    text: "Text"
-
-  - type: heading
-    level: 5
-    text: "Titel 5"
-
-  - type: paragraph
-    text: "Text"
-
-  # ── Kapitel 3: Sicherheitsüberlegungen ────────────────────
-  - type: heading
-    level: 1
-    text: "Sicherheitsüberlegungen"
-
-  - type: paragraph
-    text: "<Text>"
-    italic: true
-
-  - type: paragraph
-    text: >
-      <Hinweis auf explizit relevante gesetzliche Grundlagen, oder ein Hinweis,
-      dass bei der Umsetzung die relevanten gesetzlichen Grundlagen zu beachten sind.>
-    italic: true
-
-  # ── Kapitel 4: Haftungsausschluss ─────────────────────────
-  - type: heading
-    level: 1
-    text: "Haftungsausschluss/Hinweise auf Rechte Dritter"
-
-  - type: paragraph
-    runs:
-      - text: "eCH"
-        bold: true
-      - text: "-Standards, welche der Verein "
-      - text: "eCH"
-        bold: true
-      - text: " den Benutzenden zur unentgeltlichen Nutzung zur Verfügung stellen oder welche "
-      - text: "eCH"
-        bold: true
-      - text: " referenzieren, haben nur den Status von Empfehlungen. Der Verein "
-      - text: "eCH"
-        bold: true
-      - text: " haftet in keinem Fall für Entscheidungen oder Massnahmen, welche den Benutzenden auf Grund dieser Dokumente trifft und / oder ergreift. Die Benutzenden sind verpflichtet, die Dokumente vor deren Nutzung selbst zu überprüfen und sich gegebenenfalls beraten zu lassen. eCH-Standards können und sollen die technische, organisatorische oder juristische Beratung im konkreten Einzelfall nicht ersetzen."
-
-  - type: paragraph
-    text: >
-      In eCH-Standards referenzierte Dokumente, Verfahren, Methoden, Produkte
-      und Standards sind unter Umständen markenrechtlich, urheberrechtlich oder
-      patentrechtlich geschützt. Es liegt in der ausschliesslichen
-      Verantwortlichkeit der Benutzenden, sich die allenfalls erforderlichen
-      Rechte bei den jeweils berechtigten Personen und/oder Organisationen zu
-      beschaffen.
-
-  - type: paragraph
-    text: >
-      Obwohl der Verein eCH all seine Sorgfalt darauf verwendet, die
-      eCH-Standards sorgfältig auszuarbeiten, kann keine Zusicherung oder
-      Garantie auf Aktualität, Vollständigkeit, Richtigkeit bzw. Fehlerfreiheit
-      der zur Verfügung gestellten Informationen und Dokumente gegeben werden.
-      Der Inhalt von eCH-Standards kann jederzeit und ohne Ankündigung geändert
-      werden.
-
-  - type: paragraph
-    text: >
-      Jede Haftung für Schäden, welche den Benutzenden aus dem Gebrauch der
-      eCH-Standards entstehen ist, soweit gesetzlich zulässig, wegbedungen.
-
-  # ── Kapitel 5: Urheberrechte ───────────────────────────────
-  - type: heading
-    level: 1
-    text: "Urheberrechte"
-
-  - type: paragraph
-    text: >
-      Wer eCH-Standards erarbeitet, behält das geistige Eigentum an diesen.
-      Allerdings verpflichten sich die Erarbeitenden, ihr betreffendes geistiges
-      Eigentum oder ihre Rechte an geistigem Eigentum anderer, sofern möglich,
-      den jeweiligen Fachgruppen und dem Verein eCH kostenlos zur
-      uneingeschränkten Nutzung und Weiterentwicklung im Rahmen des
-      Vereinszweckes zur Verfügung zu stellen.
-
-  - type: paragraph
-    text: >
-      Die von den Fachgruppen erarbeiteten Standards können unter Nennung der
-      jeweiligen urhebenden Person von eCH unentgeltlich und uneingeschränkt
-      genutzt, weiterverbreitet und weiterentwickelt werden.
-
-  - type: paragraph
-    text: >
-      eCH-Standards sind vollständig dokumentiert und frei von lizenz- und/oder
-      patentrechtlichen Einschränkungen. Die dazugehörige Dokumentation kann
-      unentgeltlich bezogen werden.
-
-  - type: paragraph
-    text: >
-      Diese Bestimmungen gelten ausschliesslich für die von eCH erarbeiteten
-      Standards, nicht jedoch für Standards oder Produkte Dritter, auf welche in
-      den eCH-Standards Bezug genommen wird. Die Standards enthalten die
-      entsprechenden Hinweise auf die Rechte Dritter.
-
-# ── Appendices ───────────────────────────────────────────────
 appendices:
-
   - title: "Referenzen & Bibliographie"
-    blocks:
-      - type: paragraph
-        text: "<Keine>"
-        italic: true
-      - type: table
-        col_widths: [1500, 7711]
-        headers: []
-        rows:
-          - ["[Ref]", "<Referenz>"]
+    adoc_file: docs/appendices/anhang-a-referenzen.adoc
 
   - title: "Mitarbeit & Überprüfung"
-    blocks:
-      - type: paragraph
-        text: >
-          <Hier sind alle Mitarbeiterinnen und Mitarbeiter aufzuführen, die an
-          dieser Version des Dokuments mitgearbeitet haben.>
-        italic: true
-      - type: table
-        col_widths: [4605, 4606]
-        headers: []
-        rows:
-          - ["<N. N.>", "<Organisation/Firma>"]
-          - ["<N. N.>", "<Organisation/Firma>"]
+    adoc_file: docs/appendices/anhang-b-mitarbeit.adoc
 
   - title: "Abkürzungen und Glossar"
-    blocks:
-      - type: table
-        col_widths: [2000, 7211]
-        headers: []
-        rows:
-          - ["<Abk.>", "<Text>"]
-          - ["<Abk.>", "<Text>"]
+    adoc_file: docs/appendices/anhang-c-glossar.adoc
 
   - title: "Änderungen gegenüber Vorversion"
-    blocks:
-      - type: paragraph
-        text: "<Dies ist die erste Version.>"
-        italic: true
-      - type: paragraph
-        text: >
-          <oder eine detaillierte Zusammenstellung der Änderungen gegenüber der
-          Vorversion>
-        italic: true
-      - type: table
-        caption: "Änderungen gegenüber Vorversion"
-        col_widths: [1500, 1000, 5000, 1711]
-        headers:
-          - "Kapitel"
-          - "Seite"
-          - "Anpassung"
-          - "RFC Nr."
-        rows:
-          - ["", "", "", ""]
-          - ["", "", "", ""]
-          - ["", "", "", ""]
+    adoc_file: docs/appendices/anhang-d-aenderungen.adoc
 
   - title: "Abbildungsverzeichnis"
     type: abbildungsverzeichnis
