@@ -213,7 +213,8 @@ def render_blocks(doc, blocks, images_dir, caption_counter):
                 doc.add_paragraph(f'[adoc_file not found: {filepath}]',
                                   style='Standard')
                 continue
-            sub_blocks = parse_adoc(filepath, images_dir=images_dir)
+            skip = block.get('skip_first_heading', False)
+            sub_blocks = parse_adoc(filepath, images_dir=images_dir, skip_first_heading=skip)
             render_blocks(doc, sub_blocks, images_dir, caption_counter)
 
         # ── Headings ──────────────────────────────────────────
@@ -400,20 +401,13 @@ def _render_metadata_table(doc, metadata, ech_nr, title):
 
 # ── Hinweis ───────────────────────────────────────────────────────────────────
 
-def render_hinweis(doc):
+def render_hinweis(doc, hinweis_file='docs/hinweis.adoc'):
     doc.add_paragraph(style='Nebentitel').add_run('Hinweis')
-    doc.add_paragraph(style='Standard').add_run(
-        'Im vorliegenden Dokument wird bei der Bezeichnung von Personen eine '
-        'geschlechtsneutrale Formulierung verwendet. Basis bildet der Leitfaden '
-        'der Bundeskanzlei. Je nach Situation kommen Paarformen (Bürgerinnen und '
-        'Bürger), geschlechtsabstrakte Formen (versicherte Person), '
-        'geschlechtsneutrale Formen (Versicherte) oder Umschreibungen ohne '
-        'Personenbezug zum Einsatz. Das generische Maskulin (Bürger) ist nicht '
-        'zulässig. Vollformen werden in fortlaufenden Texten verwendet. In '
-        'verknappten Textpassagen, namentlich in Tabellen, können Kurzformen '
-        'verwendet werden (Referent/in). Genderstern und ähnliche Schreibweisen '
-        'werden nicht verwendet.'
-    )
+    if os.path.exists(hinweis_file):
+        blocks = parse_adoc(hinweis_file)
+        render_blocks(doc, blocks, os.path.dirname(hinweis_file) or '.', {})
+    else:
+        doc.add_paragraph(f'[hinweis.adoc not found: {hinweis_file}]', style='Standard')
 
 
 # ── Appendices ────────────────────────────────────────────────────────────────
@@ -433,7 +427,7 @@ def render_appendices(doc, appendices, images_dir, caption_counter):
             doc.add_paragraph(style='Anhangberschrift').add_run(heading)
             adoc_file = app.get('adoc_file')
             if adoc_file:
-                render_blocks(doc, [{'type': 'adoc_file', 'file': adoc_file}],
+                render_blocks(doc, [{'type': 'adoc_file', 'file': adoc_file, 'skip_first_heading': True}],
                               images_dir, caption_counter)
             else:
                 render_blocks(doc, app.get('blocks', []), images_dir, caption_counter)
@@ -461,7 +455,7 @@ def main():
 
     render_cover(doc, metadata)
     add_toc(doc)
-    render_hinweis(doc)
+    render_hinweis(doc, hinweis_file=content.get("hinweis_file", "docs/hinweis.adoc"))
     render_blocks(doc, content.get('chapters', []), args.images, caption_counter)
     render_appendices(doc, content.get('appendices', []), args.images, caption_counter)
 

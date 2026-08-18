@@ -1,20 +1,19 @@
 """
 adoc_parser.py — Minimal AsciiDoc parser for eCH document generation.
 
-Converts a subset of AsciiDoc syntax into the block list that
-generate_docx.py understands. Supported constructs:
-
+Supported constructs:
   Headings         == through ======
   Paragraphs       plain text (with inline bold/italic)
-  Bullet lists     * / ** / ***
-  Ordered lists    . / .. (numeric)  [loweralpha] . (alpha)
-  Images           image::file[alt,caption="..."]
+  Bullet lists     * item / ** item / *** item  (space after * required)
+  Ordered lists    . item / .. item (numeric); [loweralpha] . item (alpha)
+  Images           image::file[opts]
   Tables           |=== blocks (with optional .Caption and [cols=...])
   Roles            [.austauschformat], [.untertitel] before a paragraph
   Inline markup    *bold*, _italic_, *_bold-italic_*
-  Comments         // lines — skipped
-  Attribute lines  :key: value — skipped
-  Include lines    include:: — skipped
+  Skipped          // comments, :attr: lines, include::, [[anchors]], [appendix]
+
+parse_adoc() accepts an optional skip_first_heading=True flag used when
+the file is loaded as an appendix body (render_appendices provides the heading).
 """
 
 import re
@@ -25,22 +24,18 @@ import os
 
 def parse_inline(text):
     """
-    Parse inline bold/italic markup and return a list of run dicts:
-      [{'text': str, 'bold': bool, 'italic': bool}, ...]
-    Handles: *bold*, _italic_, *_both_*, _*both*_
+    Parse inline bold/italic and return a str (if plain) or list of run dicts.
     """
-    # Tokenise by bold+italic, bold, italic markers
     pattern = re.compile(
-        r'(\*_(?P<bi1>.*?)_\*)'     # *_bold-italic_*
-        r'|(_\*(?P<bi2>.*?)\*_)'    # _*bold-italic*_
-        r'|(\*(?P<b>.*?)\*)'        # *bold*
-        r'|(_(?P<i>[^_]+)_)',       # _italic_
+        r'(\*_(?P<bi1>.*?)_\*)'
+        r'|(_\*(?P<bi2>.*?)\*_)'
+        r'|(\*(?P<b>[^*\s][^*]*?)\*)'   # *bold* — requires non-space after opening *
+        r'|(_(?P<i>[^_\s][^_]*?)_)',     # _italic_
         re.DOTALL
     )
     runs = []
     last = 0
     for m in pattern.finditer(text):
-        # plain text before this match
         if m.start() > last:
             runs.append({'text': text[last:m.start()], 'bold': False, 'italic': False})
         bi1 = m.group('bi1')
@@ -58,140 +53,190 @@ def parse_inline(text):
         last = m.end()
     if last < len(text):
         runs.append({'text': text[last:], 'bold': False, 'italic': False})
-    # Simplify: if single plain run, just use text string
     if len(runs) == 1 and not runs[0]['bold'] and not runs[0]['italic']:
         return runs[0]['text']
     return runs
 
 
 def runs_or_text(text):
-    """Return {'text': ...} or {'runs': [...]} depending on inline content."""
     parsed = parse_inline(text)
     if isinstance(parsed, str):
         return {'text': parsed}
     return {'runs': parsed}
 
 
-# ── Table parser ───────────────────────────────────────────────────────────────
+# ── Line classification helpers ────────────────────────────────────────────────
 
-def parse_table(lines, start_idx, caption=None, col_widths=None):
-    """Parse a |=== table block, return a table block dict."""
-    rows = []
-    headers = []
-    has_header = False
-    i = start_idx + 1  # skip opening |===
-
-    while i < len(lines) and lines[i].strip() != '|===':
-        line = lines[i].strip()
-        if not line:
-            i += 1
-            continue
-        if line.startswith('|'):
-            # Split cells by | (skip leading |)
-            cells = [c.strip() for c in line[1:].split('|')]
-            rows.append(cells)
-        i += 1
-
-    # If [options="header"] was set, first row is header
-    block = {
-        'type': 'table',
-        'headers': [],
-        'rows': rows,
-    }
-    if has_header and rows:
-        block['headers'] = rows[0]
-        block['rows'] = rows[1:]
-    if caption:
-        block['caption'] = caption
-    if col_widths:
-        block['col_widths'] = col_widths
-
-    return block, i  # i points to closing |===
-
-
-# ── Heading level helpers ──────────────────────────────────────────────────────
-
-def heading_level(line):
-    """Return (level, title) for a heading line, or None."""
-    m = re.match(r'^(={2,6})\s+(.+)$', line)
+def is_heading(line):
+    """Return (level, title) or None."""
+    m = re.match(r'^(={2,6})\s+(.+)$', line.strip())
     if m:
         return len(m.group(1)), m.group(2).strip()
     return None
 
+def is_bullet(line):
+    """Return (depth, text) for '* text' / '** text' lines, else None.
+    Requires a space after the asterisk(s) to distinguish from inline bold.
+    """
+    m = re.match(r'^(\*{1,3})\s+(.+)$', line.strip())
+    if m:
+        return len(m.group(1)), m.group(2).strip()
+    return None
+
+def is_ordered(line):
+    """Return (depth, text) for '. text' / '.. text' lines, else None."""
+    m = re.match(r'^(\.{1,2})\s+(.+)$', line.strip())
+    if m:
+        return len(m.group(1)), m.group(2).strip()
+    return None
+
+def is_block_boundary(line):
+    """True if this line should stop paragraph continuation."""
+    s = line.strip()
+    if not s:
+        return True
+    if s.startswith('//'):
+        return True
+    if re.match(r'^={2,6}\s', s):          # heading
+        return True
+    if re.match(r'^\*{1,3}\s', s):         # bullet list (space required)
+        return True
+    if re.match(r'^\.{1,2}\s', s):         # ordered list
+        return True
+    if s == '|===':                         # table
+        return True
+    if re.match(r'^\[.*\]$', s):           # block attribute
+        return True
+    if s.startswith('image::'):             # image
+        return True
+    if s.startswith('include::'):           # include
+        return True
+    if re.match(r'^\[\[.*\]\]$', s):       # anchor
+        return True
+    return False
+
+
+# ── Table parser ───────────────────────────────────────────────────────────────
+
+def parse_table(lines, start_idx, caption=None, col_widths=None, has_header=False):
+    rows = []
+    i = start_idx + 1
+    while i < len(lines) and lines[i].strip() != '|===':
+        line = lines[i].strip()
+        if line and line.startswith('|'):
+            cells = [c.strip() for c in line[1:].split('|')]
+            rows.append(cells)
+        i += 1
+
+    block = {'type': 'table', 'headers': [], 'rows': rows}
+    if has_header and rows:
+        block['headers'] = rows[0]
+        block['rows'] = rows[1:]
+    if caption:
+        block['caption'] = re.sub(r'^(Tabelle|Table)\s*:\s*', '', caption)
+    if col_widths:
+        block['col_widths'] = col_widths
+    return block, i   # i points to closing |===
+
 
 # ── Main parser ────────────────────────────────────────────────────────────────
 
-def parse_adoc(filepath, images_dir=None):
+def parse_adoc(filepath, images_dir=None, skip_first_heading=False):
     """
-    Parse an AsciiDoc file and return a list of block dicts
-    suitable for generate_docx.py's render_blocks().
+    Parse an AsciiDoc file and return a list of block dicts.
+
+    skip_first_heading=True: skip the first == heading encountered.
+    Used when the file is loaded as appendix body content — the heading
+    is provided by render_appendices() and must not be duplicated.
     """
     with open(filepath, encoding='utf-8') as f:
-        raw_lines = f.readlines()
+        lines = [l.rstrip('\n') for l in f]
 
-    lines = [l.rstrip('\n') for l in raw_lines]
     blocks = []
     i = 0
-    pending_role = None       # [.role] annotation pending for next block
-    pending_caption = None    # .Caption pending for next block
-    pending_col_widths = None # [cols=...] pending for next table
-    pending_ordered_alpha = False
-    caption_counter = {'Abbildung': 0, 'Tabelle': 0}
+    pending_role        = None
+    pending_caption     = None
+    pending_col_widths  = None
+    pending_has_header  = False
+    pending_alpha       = False
+    first_heading_seen  = False
 
     while i < len(lines):
-        line = lines[i]
+        line     = lines[i]
         stripped = line.strip()
 
-        # ── Skip blank lines ──────────────────────────────────
+        # ── Blank line ────────────────────────────────────────
         if not stripped:
             pending_role = None
             i += 1
             continue
 
-        # ── Skip comments ─────────────────────────────────────
+        # ── Comment ───────────────────────────────────────────
         if stripped.startswith('//'):
             i += 1
             continue
 
-        # ── Skip attribute definitions (:key: val) ────────────
+        # ── Anchor [[...]] ────────────────────────────────────
+        if re.match(r'^\[\[.*\]\]$', stripped):
+            i += 1
+            continue
+
+        # ── Attribute definition :key: val ───────────────────
         if re.match(r'^:[^:]+:', stripped):
             i += 1
             continue
 
-        # ── Skip include directives ───────────────────────────
+        # ── include:: ─────────────────────────────────────────
         if stripped.startswith('include::'):
             i += 1
             continue
 
-        # ── Block attribute line [.role] or [options] etc. ────
-        m_attr = re.match(r'^\[([^\]]+)\]$', stripped)
-        if m_attr:
-            attr = m_attr.group(1)
-            if attr.startswith('.'):
-                pending_role = attr[1:]  # e.g. 'austauschformat'
+        # ── Block attribute line [something] ──────────────────
+        if re.match(r'^\[([^\]]*)\]$', stripped):
+            attr = re.match(r'^\[([^\]]*)\]$', stripped).group(1)
+            if attr == 'appendix':
+                # Skip [appendix] role — heading handled externally
+                i += 1
+                continue
+            elif attr.startswith('.'):
+                pending_role = attr[1:]
             elif 'loweralpha' in attr:
-                pending_ordered_alpha = True
-            elif attr.startswith('cols=') or 'cols=' in attr:
-                # extract col widths if numeric
-                col_m = re.findall(r'(\d+)', attr)
-                if col_m:
-                    pending_col_widths = [int(c) * 500 for c in col_m]
-            # options="header" handled at table parse time
+                pending_alpha = True
+            elif 'header' in attr:
+                pending_has_header = True
+            # Parse col widths from [cols="..."] 
+            cols_m = re.search(r'cols=["\']([^"\']+)["\']', attr)
+            if cols_m:
+                parts = [p.strip() for p in cols_m.group(1).split(',')]
+                widths = []
+                for p in parts:
+                    m2 = re.match(r'^(\d+)', p)
+                    if m2:
+                        widths.append(int(m2.group(1)) * 500)
+                    else:
+                        widths.append(3000)   # default for ~,^,<,> etc.
+                if widths:
+                    pending_col_widths = widths
             i += 1
             continue
 
-        # ── Caption line (.Caption text) ──────────────────────
-        if stripped.startswith('.') and not stripped.startswith('..'):
+        # ── Caption (.text) ───────────────────────────────────
+        if stripped.startswith('.') and not re.match(r'^\.\.\s', stripped):
             pending_caption = stripped[1:].strip()
             i += 1
             continue
 
         # ── Heading ───────────────────────────────────────────
-        h = heading_level(stripped)
+        h = is_heading(stripped)
         if h:
             level, title = h
+            if skip_first_heading and not first_heading_seen:
+                first_heading_seen = True
+                i += 1
+                continue
+            first_heading_seen = True
+            # Clamp level: adoc == is h1 in chapter context
             blocks.append({'type': 'heading', 'level': level - 1, 'text': title})
-            # level-1 because adoc uses == for h1 but our schema uses level 1
             pending_role = None
             pending_caption = None
             i += 1
@@ -202,115 +247,83 @@ def parse_adoc(filepath, images_dir=None):
         if m_img:
             img_file = m_img.group(1).strip()
             img_opts = m_img.group(2)
-            caption = pending_caption
+            caption  = pending_caption
             if not caption:
-                # Try caption= inside the brackets
-                cm = re.search(r'caption="([^"]+)"', img_opts)
+                cm = re.search(r'caption=["\']([^"\']+)["\']', img_opts)
                 if cm:
                     caption = cm.group(1)
-            # Width from options e.g. width=200
             wm = re.search(r'width=(\d+)', img_opts)
-            width_cm = float(wm.group(1)) / 37.8 if wm else 6.0  # px→cm rough
+            width_cm = float(wm.group(1)) / 37.8 if wm else 6.0
             width_cm = min(max(width_cm, 3.0), 14.0)
-            block = {
-                'type': 'image',
-                'file': img_file,
-                'width_cm': width_cm,
-                'align': 'right',
-            }
+            block = {'type': 'image', 'file': img_file,
+                     'width_cm': width_cm, 'align': 'right'}
             if caption:
                 block['caption'] = re.sub(r'^(Abbildung|Figure)\s*:\s*', '', caption)
             blocks.append(block)
             pending_caption = None
-            pending_role = None
+            pending_role    = None
             i += 1
             continue
 
         # ── Table ─────────────────────────────────────────────
         if stripped == '|===':
-            tbl_block, end_i = parse_table(lines, i,
-                                           caption=pending_caption,
-                                           col_widths=pending_col_widths)
-            # Detect header row from [options="header"] already consumed
-            # Check if the line before |=== contained options="header"
-            # Simple heuristic: if pending_col_widths had options, first row = header
-            # Better: look back one line
-            if end_i > i:
-                # check for options="header" in recent attr lines
-                for back in range(max(0, i-3), i):
-                    if 'options="header"' in lines[back] or "options='header'" in lines[back]:
-                        if tbl_block['rows']:
-                            tbl_block['headers'] = tbl_block['rows'][0]
-                            tbl_block['rows'] = tbl_block['rows'][1:]
-                        break
-            # Clean up caption prefix from .Caption line
-            if tbl_block.get('caption'):
-                tbl_block['caption'] = re.sub(
-                    r'^(Tabelle|Table)\s*:\s*', '', tbl_block['caption'])
-            blocks.append(tbl_block)
-            pending_caption = None
+            tbl, end_i = parse_table(lines, i,
+                                     caption=pending_caption,
+                                     col_widths=pending_col_widths,
+                                     has_header=pending_has_header)
+            blocks.append(tbl)
+            pending_caption    = None
             pending_col_widths = None
+            pending_has_header = False
             i = end_i + 1
             continue
 
-        # ── Bullet list item * / ** / *** ─────────────────────
-        m_bullet = re.match(r'^(\*{1,3})\s+(.+)$', stripped)
-        if m_bullet:
-            depth = len(m_bullet.group(1))
-            text  = m_bullet.group(2).strip()
+        # ── Bullet list ───────────────────────────────────────
+        b_item = is_bullet(stripped)
+        if b_item:
+            depth, text = b_item
             style_map = {1: 'bullet1', 2: 'bullet2', 3: 'bullet3'}
-            b = {'type': 'list_item', 'list_style': style_map[depth]}
-            b.update(runs_or_text(text))
-            blocks.append(b)
+            block = {'type': 'list_item', 'list_style': style_map[depth]}
+            block.update(runs_or_text(text))
+            blocks.append(block)
             pending_role = None
             i += 1
             continue
 
-        # ── Ordered list item . / .. ──────────────────────────
-        m_ordered = re.match(r'^(\.{1,2})\s+(.+)$', stripped)
-        if m_ordered:
-            depth = len(m_ordered.group(1))
-            text  = m_ordered.group(2).strip()
-            if pending_ordered_alpha and depth == 1:
-                style = 'alpha1'
-                pending_ordered_alpha = False
-            else:
-                style = 'number1'
-            b = {'type': 'list_item', 'list_style': style}
-            b.update(runs_or_text(text))
-            blocks.append(b)
+        # ── Ordered list ──────────────────────────────────────
+        o_item = is_ordered(stripped)
+        if o_item:
+            depth, text = o_item
+            style = 'alpha1' if (pending_alpha and depth == 1) else 'number1'
+            if depth == 1:
+                pending_alpha = False
+            block = {'type': 'list_item', 'list_style': style}
+            block.update(runs_or_text(text))
+            blocks.append(block)
             pending_role = None
             i += 1
             continue
 
-        # ── NOTE / TIP / WARNING admonition blocks ────────────
-        if stripped in ('NOTE', 'TIP', 'WARNING', 'IMPORTANT', 'CAUTION'):
-            # next line should be ====
-            if i + 1 < len(lines) and lines[i+1].strip() == '====':
-                i += 2  # skip label and ====
-                admon_lines = []
-                while i < len(lines) and lines[i].strip() != '====':
-                    admon_lines.append(lines[i].strip())
-                    i += 1
-                text = ' '.join(l for l in admon_lines if l)
-                b = {'type': 'paragraph', 'style': 'Hinweis'}
-                b.update(runs_or_text(text))
-                blocks.append(b)
-                i += 1  # skip closing ====
-                continue
+        # ── Admonition block (NOTE / TIP / WARNING …) ─────────
+        if stripped in ('NOTE', 'TIP', 'WARNING', 'IMPORTANT', 'CAUTION') \
+                and i + 1 < len(lines) and lines[i + 1].strip() == '====':
+            i += 2
+            admon = []
+            while i < len(lines) and lines[i].strip() != '====':
+                admon.append(lines[i].strip())
+                i += 1
+            text = ' '.join(l for l in admon if l)
+            block = {'type': 'paragraph'}
+            block.update(runs_or_text(text))
+            blocks.append(block)
+            i += 1
+            continue
 
-        # ── Plain paragraph (may have pending role) ───────────
-        # Collect continuation lines
+        # ── Plain paragraph ───────────────────────────────────
+        # Collect continuation lines until a block boundary
         para_lines = [stripped]
         i += 1
-        while i < len(lines) and lines[i].strip() and \
-              not lines[i].strip().startswith('=') and \
-              not lines[i].strip().startswith('*') and \
-              not lines[i].strip().startswith('.') and \
-              not lines[i].strip().startswith('|') and \
-              not lines[i].strip().startswith('[') and \
-              not lines[i].strip().startswith('image::') and \
-              not lines[i].strip().startswith('//'):
+        while i < len(lines) and not is_block_boundary(lines[i]):
             para_lines.append(lines[i].strip())
             i += 1
 
@@ -321,11 +334,11 @@ def parse_adoc(filepath, images_dir=None):
         elif pending_role == 'untertitel':
             blocks.append({'type': 'subtitle', 'text': text})
         else:
-            b = {'type': 'paragraph'}
-            b.update(runs_or_text(text))
-            blocks.append(b)
+            block = {'type': 'paragraph'}
+            block.update(runs_or_text(text))
+            blocks.append(block)
 
-        pending_role = None
+        pending_role    = None
         pending_caption = None
 
     return blocks
